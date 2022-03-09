@@ -125,5 +125,43 @@ function dibujarCirculo(){
 }
 
 
+function cuadratica(){
+grad1=lienzo.createLinearGradient(100,400,400,400);
+grad1.addColorStop(0, "orange");
+grad1.addColorStop(0.2, "yellow");
+grad1.addColorStop(0.4, "purple");
+grad1.addColorStop(0.6, "red");
+grad1.addColorStop(0.8, "green");
+grad1.addColorStop(1, "blue")
+
+lienzo.beginPath();
+lienzo.shadowOffsetX=10;
+lienzo.shadowOffsetY=-10;
+lienzo.shadowColor="#aa0";
+lienzo.shadowBlur=8;
+lienzo.fillStyle=grad1;
+lienzo.moveTo(100,700)
+lienzo.quadraticCurveTo(300,250,400,700);
+lienzo.fill();
+}
+
+
+function curvaBezier(){
+  grad1=lienzo.createLinearGradient(600,600,900,600);
+  grad1.addColorStop(0, "blue");
+  grad1.addColorStop(1, "red");
+  lienzo.strokeStyle = grad1;
+  lienzo.beginPath();
+  lienzo.shadowOffsetX=-5;
+  lienzo.shadowOffsetY=-5;
+  lienzo.shadowColor="black";
+  lienzo.shadowBlur=8;
+  lienzo.moveTo(500, 700);
+	lienzo.quadraticCurveTo(600,600,850,700);
+	lienzo.stroke();
+}
+
 dibujarCuadrado();
 dibujarCirculo();
+cuadratica();
+curvaBezier();
