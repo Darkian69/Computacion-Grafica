@@ -2,7 +2,7 @@ const k = kaboom({
   global: true, //asegura las acciones gloables del juego
   fullscreen: true, //Asegura que el fondo sea de pantalla completa
   scale: 1.8, //la escala para la interfaz del juego
-  clearColor: [0,0,0, 0], //color de fondo
+  clearColor: [0,0,0, 1], //color de fondo
 })
 
 //https://imgur.com/xTKfXnF
@@ -31,17 +31,29 @@ loadSprite('pescado', 'DXcXNa9.png')
 loadSprite('paredlvl2', '3vCwaQq.png')
 loadSprite('suelolvl2', 'xTKfXnF.png')
 var xd = 0
+let clamed = false
 
 scene("Intro", ()=>{
 
+  const nombre1 = add([
+    text("Juan Andres Aguirre", 12),
+    pos(700, 630),
+    color(1, 1, 1)
+  ])
+
+  const nombre2 = add([
+    text("Santiago Runceria", 12),
+    pos(700, 670),
+    color(1, 1, 1)
+  ])
   const titulo = add([
-    text("titulo", 50),
+    text("Cat Escape", 50),
     pos(300, 200),
     color(1, 1, 0)
   ])
   const start = add([
     text("Start", 40),
-    pos(400, 300),
+    pos(450, 300),
     color(1, 1, 1),
     "start"
   ])
@@ -246,7 +258,7 @@ function damage(){
 
 gato.collides("coin", (e)=>{
   puntos()
-  debug.log(puntuacion.value)
+
   score += 1
   destroy(e)
 })
@@ -258,9 +270,11 @@ keyDown("right", ()=> {
       gato.move(400, 0)
       if(gato.grounded())
         gato.changeSprite("gato_d")
-      else {
+      if(!gato.grounded())
         gato.changeSprite("gatoSalto_d")
-      }
+      // else {
+      //   gato.changeSprite("gatoSalto_d")
+      // }
 
 
 })
@@ -278,21 +292,22 @@ keyDown("left", ()=>{
 
 keyDown("up", ()=> {
   if(gato.grounded()) //estar en base soilda
-  gato.jump(600)
+    gato.jump(600)
 
   if(gatodir == 1 && !gato.grounded())
     gato.changeSprite("gatoSalto_d")
   else if(gatodir == 0 && !gato.grounded())
     gato.changeSprite("gatoSalto_i")
 
-    if(gato.grounded()){
-      if(gatodir == 1)
-        gato.changeSprite("gatoStandDer")
-        else if(gatodir == 0)
-        gato.changeSprite("gatoStand")}
+    // if(gato.grounded()){
+    //   if(gatodir == 1)
+    //     gato.changeSprite("gatoStandDer")
+    //     else if(gatodir == 0)
+    //     gato.changeSprite("gatoStand")}
 })
 
 keyRelease(["left", "right", "up", "down"], ()=> {
+
   if(gato.grounded()){
     if(gatodir == 1)
       gato.changeSprite("gatoStandDer")
@@ -349,17 +364,21 @@ gato.collides("piso", (e)=>{
 })
 
 gato.collides("portalxd", ()=>{
-  go("level2", {score:0, vidas:7})
+  go("level2", {score:puntuacion.value, vidas:vidaas.value})
 })
 const gameLevel = addLevel(map, levelCfg)
 }) //final lvl 1
 
 //level 2 #################
-scene("level2", ({score, vidas}) => {
+scene("level2", ({score, vidas, repeat, open}) => {
   layers(['bg', 'obj', 'ui'], 'obj')
 
   const map =
   [
+    '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
+    '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
+    '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
+    '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
     '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
     '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
     '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
@@ -373,8 +392,8 @@ scene("level2", ({score, vidas}) => {
     '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&__&&&&',
     '&&&&&&&&&&___&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
     '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
-    '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&___&&&&&&&&&',
-    '&&&&&&&&&&&&&&&&&&__&&&&&&&&&&&&&&&8&&&&&&&&&&&&&&&&&',
+    '&&&&&&&&&&&&&&&&&&8&&&&&&&&&&&&&&&&&&&&&&___&&&&&&&&&',
+    '&&&&&&&&&&&&&&&&&&__&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
     '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&___&&&&&&&&&&&&&&&&',
     '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
 
@@ -394,19 +413,35 @@ scene("level2", ({score, vidas}) => {
   const gameLevel = addLevel(map, levelCfg)
 
 
+
+  action("llave", (e)=>{
+    if(hasKey == true)
+      destroy(e)
+  })
+
+  action("candado", (e)=>{
+    if(openlvl == true)
+      destroy(e)
+  })
+
+  action("coin", (e)=>{
+    if(clamed == true)
+      destroy(e)
+  })
+
   var gatodir = 1
   let inmortal = false
   let save = false
   const gato = add([
     sprite('gato_d'),
-    pos(510, 480),
+    pos(510, 670),
     scale(0.5),
     body()
   ])
 
   const portal = add([
     sprite('portal'),
-    pos(2100, 190),
+    pos(2100, 400),
     scale(0.25),
     "portalxd"
 
@@ -460,7 +495,7 @@ scene("level2", ({score, vidas}) => {
 
   const textoo = add([
     text("Salta!!", 40),
-    pos(1200, 200)
+    pos(1200, 400)
 
   ])
 
@@ -468,21 +503,52 @@ scene("level2", ({score, vidas}) => {
     if(gato.pos.y >= 1000){
       if(!save)
       damage()
-      go("level2", {score:puntuacion.value, vidas:vidaas.value})
+      go("level2", {score:puntuacion.value, vidas:vidaas.value, repeat:hasKey,open:openlvl})
     }
 
   })
 
   gato.collides("coin", (e)=>{
     puntos()
-    debug.log(puntuacion.value)
+    clamed = true
     score += 1
     destroy(e)
+
+  })
+
+  let hasKey = repeat
+  let openlvl = open
+  gato.collides("llave",(e)=>{
+    destroy(e)
+    hasKey = true
+  })
+
+  gato.collides("candado", (a)=>{
+    if(hasKey == true){
+      destroy(a)
+      openlvl = true}
+      else {
+        const adv = add([
+          text("Necesitas la llave!!", 20),
+          pos(500, 100)
+        ])
+        wait(3, ()=>{
+          destroy(adv)
+        })
+      }
+  })
+
+
+  gato.collides("portalxd", ()=>{
+    if(openlvl)
+      debug.log("xd")
+    else
+      go("level2", {score:puntuacion.value, vidas:vidaas.value, repeat:true, open:openlvl})
   })
 
   gato.collides("suelo", ()=>{
     save = true
-    debug.log(save)
+    debug.log(open)
   })
   //Movimiento personaje principal
   gato.action(()=>{
@@ -538,14 +604,14 @@ scene("level2", ({score, vidas}) => {
       if(gatodir == 1)
         gato.changeSprite("gatoStandDer")
       else if(gatodir == 0)
-        gato.changeSprite("gatoStand")
+        gato.changeSprite("gatoStand" )
     }
 
   })
 
 
 })//final level 2
-debug.inspect = true
-//start("level1", ({score:0, vidas:7}))
-start("level2", ({score:0, vidas:7}))
+//debug.inspect = true
+start("level1", ({score:0, vidas:7}))
+//start("level2", ({score:0, vidas:7, repeat:false, open:false}))
 //start("Intro")
