@@ -26,6 +26,7 @@ loadSprite('candado', 'clCAjJh.png')
 loadSprite('gatoStand','JkGQohl.png')
 loadSprite('gatoStandDer','gxGiYwr.png')
 loadSprite('pescado', 'DXcXNa9.png')
+loadSprite('calaca', 'SljPC0W.png')
 
 //level 2
 loadSprite('paredlvl2', '3vCwaQq.png')
@@ -70,6 +71,29 @@ scene("Intro", ()=>{
       go("level1", {score:0, vidas:7})
   })
 })//Final escena intro
+
+scene("lose", (score)=>{
+  const perdiste = add([
+    text("Perdiste", 50),
+    pos(450, 300),
+    color(1, 0, 0)
+  ])
+
+  const puntoss = add([
+    text("Puntos: " + score, 30),
+    pos(450, 400)
+  ])
+
+  const calavera = add([
+    sprite("calaca"),
+    pos(100, 200),
+    scale(0.5)
+  ])
+
+  keyDown('r', ()=>{
+    go("Intro")
+  })
+}) //final escena lose
 //var luciernagas = ["luciernagaOn", "luciernagaOff"]
 scene("level1", ({score, vidas}) => {
   layers(['bg', 'obj', 'ui'], 'obj')
@@ -249,10 +273,12 @@ function puntos(){
 
 function damage(){
 
-    vidas -= 1
-    vidaas.value -= 1
-    vidaas.text = vidaas.value
-
+  vidas -= 1
+  if(vidas < 0)
+    go("lose", score)
+  else{
+  vidaas.value -= 1
+  vidaas.text = vidaas.value}
 }
 
 
@@ -299,12 +325,19 @@ keyDown("up", ()=> {
   else if(gatodir == 0 && !gato.grounded())
     gato.changeSprite("gatoSalto_i")
 
+    gato.on("grounded", ()=>{
+      if(gatodir == 1)
+        gato.changeSprite("gato_d")
+        else if(gatodir == 0)
+          gato.changeSprite("gato_i")
+    })
     // if(gato.grounded()){
     //   if(gatodir == 1)
     //     gato.changeSprite("gatoStandDer")
     //     else if(gatodir == 0)
     //     gato.changeSprite("gatoStand")}
 })
+
 
 keyRelease(["left", "right", "up", "down"], ()=> {
 
@@ -391,7 +424,7 @@ scene("level2", ({score, vidas, repeat, open}) => {
     '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&?&&&&',
     '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&__&&&&',
     '&&&&&&&&&&___&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
-    '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
+    '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&8&&&&&&&&&&',
     '&&&&&&&&&&&&&&&&&&8&&&&&&&&&&&&&&&&&&&&&&___&&&&&&&&&',
     '&&&&&&&&&&&&&&&&&&__&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&',
     '&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&___&&&&&&&&&&&&&&&&',
@@ -488,8 +521,11 @@ scene("level2", ({score, vidas, repeat, open}) => {
   function damage(){
 
       vidas -= 1
+      if(vidas < 0)
+        go("lose", score)
+      else{
       vidaas.value -= 1
-      vidaas.text = vidaas.value
+      vidaas.text = vidaas.value}
 
   }
 
@@ -501,8 +537,9 @@ scene("level2", ({score, vidas, repeat, open}) => {
 
   gato.action(()=>{
     if(gato.pos.y >= 1000){
-      if(!save)
+
       damage()
+      if(vidas >= 0)
       go("level2", {score:puntuacion.value, vidas:vidaas.value, repeat:hasKey,open:openlvl})
     }
 
@@ -510,7 +547,8 @@ scene("level2", ({score, vidas, repeat, open}) => {
 
   gato.collides("coin", (e)=>{
     puntos()
-    clamed = true
+    if(score == 2)
+      clamed = true
     score += 1
     destroy(e)
 
@@ -548,7 +586,7 @@ scene("level2", ({score, vidas, repeat, open}) => {
 
   gato.collides("suelo", ()=>{
     save = true
-    debug.log(open)
+
   })
   //Movimiento personaje principal
   gato.action(()=>{
@@ -612,6 +650,7 @@ scene("level2", ({score, vidas, repeat, open}) => {
 
 })//final level 2
 //debug.inspect = true
-start("level1", ({score:0, vidas:7}))
+//start("level1", ({score:0, vidas:7}))
 //start("level2", ({score:0, vidas:7, repeat:false, open:false}))
-//start("Intro")
+start("Intro")
+//start("lose", 12)
