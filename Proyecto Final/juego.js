@@ -724,14 +724,25 @@ scene("final", ({score, vidas}) => {
       "pescado"
 
     ])
-    
+
     wait(choose([1, 2,3]), ()=>{
       destroy(help)
     })
 
   })
 
+  let vida = 600
+  const healthbar = add([
+		rect(vida, 24),
+		pos(58, 59),
+		color(0, 1, 0),
+		layer("bg"),
 
+	])
+
+  healthbar.on("update", ()=>{
+    healthbar.rect = (100, 24)
+  })
   var gatodir = 1
   let inmortal = false
   const gato = add([
@@ -817,7 +828,7 @@ scene("final", ({score, vidas}) => {
     })
 
     keyPress("space", () => {
-		spawnBullet(boss.pos.x)
+		vida -= 100
 	})
 
   // gato.action(()=>{
