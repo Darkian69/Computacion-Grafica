@@ -30,6 +30,7 @@ loadSprite('calaca', 'SljPC0W.png')
 loadSprite('paredFinal', '5TgnSB5.png')
 loadSprite("fuego", 'OA0kwd0.png')
 loadSprite('FinalBoss2', 'Zy4zy7s.png')
+loadSprite('gatoWin', 'ZMYZplo.png')
 
 //level 2
 loadSprite('paredlvl2', '3vCwaQq.png')
@@ -97,6 +98,55 @@ scene("lose", (score)=>{
     go("Intro")
   })
 }) //final escena lose
+
+scene("win", (score)=>{
+  const ganar = add([
+    text("GANASTE!!", 50),
+    pos(450, 300),
+    color(1, 0, 0)
+
+
+  ])
+
+  const puntoss = add([
+    text("Puntos: " + score, 30),
+    pos(450, 400)
+  ])
+
+  const gatito = add([
+    sprite("gatoWin"),
+    pos(100, 200),
+    scale(0.5)
+  ])
+
+  wait(5, ()=>{
+    go("creditos")
+  })
+}) //final escena win
+
+scene("creditos", ()=>{
+  add([
+    text("Gracias por jugar!", 30),
+    pos(400, 200)
+  ])
+
+  add([
+    text("Creadores: ", 20),
+    pos(400, 300)
+  ])
+  add([
+    text("Juan Andres Aguirre", 20),
+    pos(400, 350)
+  ])
+  add([
+    text("Santiago Runceria", 20),
+    pos(400, 400)
+  ])
+
+  keyDown('r', ()=>{
+    go("Intro")
+  })
+})
 //var luciernagas = ["luciernagaOn", "luciernagaOff"]
 scene("level1", ({score, vidas}) => {
   layers(['bg', 'obj', 'ui'], 'obj')
@@ -240,12 +290,12 @@ enemigo2.collides("piso2", ()=>{
 camIgnore(["xd", "ui"]);
 const puntuacion1 = add([
   text("Score: ", 20),
-  pos(130, 100),
+  pos(130, 150),
   layer("ui")
 ])
 const puntuacion = add([
     text(score, 20),
-    pos(250, 100),
+    pos(250, 150),
     layer("ui"),
     {
         value: score
@@ -255,13 +305,13 @@ const puntuacion = add([
 
 const vidas1 = add([
   text("Vidas: ", 20),
-  pos(130, 130),
+  pos(130, 170),
   layer("ui")
 ])
 
 const vidaas = add([
     text(vidas, 20),
-    pos(250, 130),
+    pos(250, 170),
     layer("ui"),
     {
         value: vidas
@@ -686,7 +736,7 @@ scene("final", ({score, vidas}) => {
   }
 
   const gameLevel = addLevel(map, levelCfg)
-
+  let bossLive = true
 
   const boss = add([
     sprite("FinalBoss"),
@@ -712,11 +762,14 @@ scene("final", ({score, vidas}) => {
       a.changeSprite("FinalBoss2")
   })
 
-  loop(choose([1,3]), ()=>{
-    spawnBullet(boss.pos.x)
+  loop(1, ()=>{
+    if(bossLive)
+      spawnBullet(boss.pos.x)
   })
 
+
   loop(4, ()=>{
+    if(bossLive){
     const help = add([
       sprite("pescado"),
       scale(0.4),
@@ -728,21 +781,47 @@ scene("final", ({score, vidas}) => {
     wait(choose([1, 2,3]), ()=>{
       destroy(help)
     })
-
+  }
   })
 
-  let vida = 600
-  const healthbar = add([
-		rect(vida, 24),
-		pos(58, 59),
-		color(0, 1, 0),
-		layer("bg"),
+  let vida = 1200
 
-	])
+
+  const healthbar = add([
+
+    rect(width()-200, 24),
+    pos(58, 59),
+    color(0, 1, 0),
+    layer("bg"),
+    "barra",
+
+    {
+    max: 750,
+    set(hp) {
+      this.width = (width() * hp / this.max)/2
+
+    },
+  },
+  ])
+
 
   healthbar.on("update", ()=>{
-    healthbar.rect = (100, 24)
+    if(vida <= 0){
+      destroy(boss)
+      destroy(healthbar)
+      bossLive = false
+      add([
+        text("GANASTE!!", 60),
+        pos(300, 300)
+      ])
+
+      wait(3, ()=>{
+        go("win", score)
+      })
+
+    }
   })
+
   var gatodir = 1
   let inmortal = false
   const gato = add([
@@ -755,12 +834,12 @@ scene("final", ({score, vidas}) => {
   camIgnore(["xd", "ui"]);
   const puntuacion1 = add([
     text("Score: ", 20),
-    pos(130, 100),
+    pos(130, 120),
     layer("ui")
   ])
   const puntuacion = add([
       text(score, 20),
-      pos(250, 100),
+      pos(250, 120),
       layer("ui"),
       {
           value: score
@@ -770,13 +849,13 @@ scene("final", ({score, vidas}) => {
 
   const vidas1 = add([
     text("Vidas: ", 20),
-    pos(130, 130),
+    pos(130, 150),
     layer("ui")
   ])
 
   const vidaas = add([
       text(vidas, 20),
-      pos(250, 130),
+      pos(250, 150),
       layer("ui"),
       {
           value: vidas
@@ -801,6 +880,8 @@ scene("final", ({score, vidas}) => {
   }
 
   gato.collides("pescado", (e)=>{
+    vida -= 100
+    healthbar.set(vida)
     puntos()
     score += 1
     destroy(e)
@@ -903,7 +984,9 @@ scene("final", ({score, vidas}) => {
 
 //debug.inspect = true
 //start("level1", ({score:0, vidas:7}))
-//start("level2", ({score:0, vidas:7, repeat:false, open:false}))
-start("final", ({score:3, vidas: 7}))
-//start("Intro")
+//start("level2", ({score:1, vidas:7, repeat:false, open:false}))
+//start("final", ({score:3, vidas: 7}))
+start("Intro")
 //start("lose", 12)
+//start("win", 12)
+//start("creditos")
