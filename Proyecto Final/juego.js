@@ -27,6 +27,9 @@ loadSprite('gatoStand','JkGQohl.png')
 loadSprite('gatoStandDer','gxGiYwr.png')
 loadSprite('pescado', 'DXcXNa9.png')
 loadSprite('calaca', 'SljPC0W.png')
+loadSprite('paredFinal', '5TgnSB5.png')
+loadSprite("fuego", 'OA0kwd0.png')
+loadSprite('FinalBoss2', 'Zy4zy7s.png')
 
 //level 2
 loadSprite('paredlvl2', '3vCwaQq.png')
@@ -365,7 +368,7 @@ gato.collides("enemigo1", ()=>{
 })
 
 gato.action(()=>{
-  camPos(gato.pos)
+  camPos(gato.pos.x, 300)
 })
 
 let hasKey = false
@@ -579,7 +582,7 @@ scene("level2", ({score, vidas, repeat, open}) => {
 
   gato.collides("portalxd", ()=>{
     if(openlvl)
-      debug.log("xd")
+      go("final", ({score:score, vidas: vidas}))
     else
       go("level2", {score:puntuacion.value, vidas:vidaas.value, repeat:true, open:openlvl})
   })
@@ -620,21 +623,25 @@ scene("level2", ({score, vidas, repeat, open}) => {
   })
 
   keyDown("up", ()=> {
-
-    if(gato.grounded()){ //estar en base soilda
-      save = false
-    gato.jump(600)}
+    if(gato.grounded()) //estar en base soilda
+      gato.jump(600)
 
     if(gatodir == 1 && !gato.grounded())
       gato.changeSprite("gatoSalto_d")
     else if(gatodir == 0 && !gato.grounded())
       gato.changeSprite("gatoSalto_i")
 
-      if(gato.grounded()){
+      gato.on("grounded", ()=>{
         if(gatodir == 1)
-          gato.changeSprite("gatoStandDer")
+          gato.changeSprite("gato_d")
           else if(gatodir == 0)
-          gato.changeSprite("gatoStand")}
+            gato.changeSprite("gato_i")
+      })
+      // if(gato.grounded()){
+      //   if(gatodir == 1)
+      //     gato.changeSprite("gatoStandDer")
+      //     else if(gatodir == 0)
+      //     gato.changeSprite("gatoStand")}
   })
 
   keyRelease(["left", "right", "up", "down"], ()=> {
@@ -649,8 +656,243 @@ scene("level2", ({score, vidas, repeat, open}) => {
 
 
 })//final level 2
+
+scene("final", ({score, vidas}) => {
+  layers(['bg', 'obj', 'ui'], 'obj')
+
+  const map = [
+    '_________________________',
+    '_#######################_',
+    '_#######################_',
+    '_#######################_',
+    '_#######################_',
+    '_#######################_',
+    '_#######################_',
+    '_#######################_',
+    '_#######################_',
+    '_#######################_',
+    '_#######################_',
+    '_#######################_',
+    '_#######################_',
+    '_________________________',
+  ]
+
+  const levelCfg = {
+    width: 50,
+    height: 50,
+    '#': [sprite("paredFinal"), layer('bg')],
+    '_': [sprite("bloque"), solid(), scale(0.5), "suelo"],
+    '8': [sprite("pescado"), "coin", scale(0.4)]
+  }
+
+  const gameLevel = addLevel(map, levelCfg)
+
+
+  const boss = add([
+    sprite("FinalBoss"),
+    pos(400, 60),
+    scale(0.5),
+    "jefe",
+    {
+      dir:-1
+    }
+  ])
+
+  action("jefe", (e)=>{
+    e.move(e.dir*300, 0)
+
+  })
+
+  collides("jefe", "suelo", (a, e)=>{
+    a.dir = -a.dir
+    a.move(a.dir*300, 0)
+    if(a.dir<0)
+      a.changeSprite("FinalBoss")
+    else
+      a.changeSprite("FinalBoss2")
+  })
+
+  loop(choose([1,3]), ()=>{
+    spawnBullet(boss.pos.x)
+  })
+
+  loop(4, ()=>{
+    const help = add([
+      sprite("pescado"),
+      scale(0.4),
+      pos(rand(50, 1100), 600),
+      "pescado"
+
+    ])
+    
+    wait(choose([1, 2,3]), ()=>{
+      destroy(help)
+    })
+
+  })
+
+
+  var gatodir = 1
+  let inmortal = false
+  const gato = add([
+    sprite('gato_d'),
+    pos(510, 470),
+    scale(0.5),
+    body()
+  ])
+
+  camIgnore(["xd", "ui"]);
+  const puntuacion1 = add([
+    text("Score: ", 20),
+    pos(130, 100),
+    layer("ui")
+  ])
+  const puntuacion = add([
+      text(score, 20),
+      pos(250, 100),
+      layer("ui"),
+      {
+          value: score
+      }
+
+  ])
+
+  const vidas1 = add([
+    text("Vidas: ", 20),
+    pos(130, 130),
+    layer("ui")
+  ])
+
+  const vidaas = add([
+      text(vidas, 20),
+      pos(250, 130),
+      layer("ui"),
+      {
+          value: vidas
+      }
+
+  ])
+  function puntos(){
+      puntuacion.value += 1
+      puntuacion.text = puntuacion.value
+
+  }
+
+  function damage(){
+
+      vidas -= 1
+      if(vidas < 0)
+        go("lose", score)
+      else{
+      vidaas.value -= 1
+      vidaas.text = vidaas.value}
+
+  }
+
+  gato.collides("pescado", (e)=>{
+    puntos()
+    score += 1
+    destroy(e)
+
+  })
+  function spawnBullet(p) {
+  	const bola =	add([
+  			sprite("fuego"),
+  			//area(),
+      //  body(),
+  			pos(p+100, 120),
+  			origin("center"),
+  			"pepe"
+  		])
+
+      bola.on("update", ()=>{
+        bola.move(0, 300)
+      })
+  	}
+
+
+    gato.collides("pepe", (e)=>{
+      damage()
+      destroy(e)
+    })
+
+    keyPress("space", () => {
+		spawnBullet(boss.pos.x)
+	})
+
+  // gato.action(()=>{
+  //   gato.collides("a", ()=> {
+  //     debug.log("xd")
+  //   })
+  // })
+
+
+  gato.action(()=>{
+    camPos(gato.pos.x, 360)
+  })
+
+  keyDown("right", ()=> {
+
+        gatodir = 1
+        gato.move(300, 0)
+        if(gato.grounded()){
+          save = false
+          gato.changeSprite("gato_d")}
+        else {
+          gato.changeSprite("gatoSalto_d")
+        }
+
+
+  })
+
+  keyDown("left", ()=>{
+    gatodir = 0
+
+    gato.move(-300, 0)
+    if(gato.grounded()){
+      save = false
+      gato.changeSprite("gato_i")}
+    else {
+      gato.changeSprite("gatoSalto_i")
+    }
+  })
+
+  keyDown("up", ()=> {
+    if(gato.grounded()) //estar en base soilda
+      gato.jump(500)
+
+    if(gatodir == 1 && !gato.grounded())
+      gato.changeSprite("gatoSalto_d")
+    else if(gatodir == 0 && !gato.grounded())
+      gato.changeSprite("gatoSalto_i")
+
+      gato.on("grounded", ()=>{
+        if(gatodir == 1)
+          gato.changeSprite("gato_d")
+          else if(gatodir == 0)
+            gato.changeSprite("gato_i")
+      })
+      // if(gato.grounded()){
+      //   if(gatodir == 1)
+      //     gato.changeSprite("gatoStandDer")
+      //     else if(gatodir == 0)
+      //     gato.changeSprite("gatoStand")}
+  })
+
+  keyRelease(["left", "right", "up", "down"], ()=> {
+    if(gato.grounded()){
+      if(gatodir == 1)
+        gato.changeSprite("gatoStandDer")
+      else if(gatodir == 0)
+        gato.changeSprite("gatoStand" )
+    }
+
+  })
+})//final final xd
+
 //debug.inspect = true
 //start("level1", ({score:0, vidas:7}))
 //start("level2", ({score:0, vidas:7, repeat:false, open:false}))
-start("Intro")
+start("final", ({score:3, vidas: 7}))
+//start("Intro")
 //start("lose", 12)
